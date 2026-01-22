@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -142,9 +142,10 @@
       writeCache(empNo, password, json);
       render(json);
 
-    } catch (e) {
-      $("error").textContent = "네트워크/서버 오류가 발생했습니다.";
-    } finally {
+   } catch (e) {
+  console.error(e);
+  $("error").textContent = "오류: " + (e?.message || e);
+} finally {
       setTimeout(() => { btn.disabled = false; }, 1500);
     }
   }
