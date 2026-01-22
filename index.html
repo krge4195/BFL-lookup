@@ -52,7 +52,7 @@
   </div>
 
 <script>
-  // 1) 여기에 Apps Script "웹앱 URL" 붙여넣기
+  // 아.. 하기 싫어.. 1) Apps Script 웹앱 URL
   const API_URL = "https://script.google.com/macros/s/AKfycbweAefpkiTQyTvzR6c87Lyjy_kAOpK48pqJ1MSKfbZsPK5TWbByksOGnG6AOqUrihXx/exec";
 
   // 2) 같은 입력값 재조회 방지(10분 캐시)
@@ -60,7 +60,7 @@
 
   const $ = (id) => document.getElementById(id);
 
-  // 숫자에 콤마 들어있어도 안전하게 표시
+  // 숫자에 콤마 들어있어도 텍스트로 인식 및 표시
   const fmt = (n) => {
     if (n === null || n === undefined || n === "") return "-";
     const s = String(n).replaceAll(",", "").trim();
@@ -131,7 +131,7 @@
         return;
       }
 
-      // 2) 서버 호출: 요청키가 empNo, password인 게 핵심
+      // 2) 서버 호출: 요청키 empNo, password
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script 호환
