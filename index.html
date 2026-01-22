@@ -13,10 +13,15 @@
     button:disabled { opacity: .6; cursor: not-allowed; }
     .error { margin-top: 12px; color: #c0392b; }
     .card { margin-top: 18px; padding: 16px; border: 1px solid #ddd; border-radius: 12px; display: none; }
-    .kv {   display: grid; grid-template-columns: 220px 260px; gap: 8px 12px; align-items: center; }
+    .kv { display: grid; grid-template-columns: 220px minmax(140px, 260px); gap: 8px 12px; align-items: center; }
     .k { color: #555; }
     .v { font-weight: 700; }
-    .num { text-align: right; }
+    .num{ text-align:right; white-space:nowrap; }
+
+    @media (max-width: 720px){
+  .kv{ grid-template-columns: 1fr; }
+  .k{ margin-top: 6px; }
+  .v, .num{ text-align:left;  }
   </style>
 </head>
 <body>
