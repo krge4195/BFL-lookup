@@ -16,6 +16,7 @@
     .kv { display: grid; grid-template-columns: 220px 1fr; gap: 8px; margin-top: 10px; }
     .k { color: #555; }
     .v { font-weight: 700; }
+    .num { text-align: right; }
   </style>
 </head>
 <body>
@@ -43,10 +44,10 @@
       </div>
 
       <div class="kv">
-        <div class="k">2024년 실적</div><div class="v" id="y2024sales"></div>
-        <div class="k">2024년 총 상여금</div><div class="v" id="y2024bonus"></div>
-        <div class="k">2025년 실적</div><div class="v" id="y2025sales"></div>
-        <div class="k">2025년 총 상여금</div><div class="v" id="y2025bonus"></div>
+        <div class="k">2024년 실적</div><div class="v num" id="y2024sales"></div>
+        <div class="k">2024년 총 상여금</div><div class="v num" id="y2024bonus"></div>
+        <div class="k">2025년 실적</div><div class="v num" id="y2025sales"></div>
+        <div class="k">2025년 총 상여금</div><div class="v num" id="y2025bonus"></div>
       </div>
     </div>
   </div>
@@ -62,11 +63,14 @@
 
   // 숫자에 콤마 들어있어도 텍스트로 인식 및 표시
   const fmt = (n) => {
-    if (n === null || n === undefined || n === "") return "-";
-    const s = String(n).replaceAll(",", "").trim();
-    const num = Number(s);
-    return Number.isFinite(num) ? num.toLocaleString("ko-KR") : String(n);
-  };
+  if (n === null || n === undefined || n === "") return "-";
+  const s = String(n).replaceAll(",", "").trim();
+  const num = Number(s);
+  if (!Number.isFinite(num)) return String(n);
+
+  // 소숫점 제거 (반올림)
+  return Math.round(num).toLocaleString("ko-KR");
+};
 
   function cacheKey(empNo, password) {
     return `LoungeLookup:${empNo}:${password}`;
