@@ -9,19 +9,14 @@
     .wrap { max-width: 760px; }
     .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
     input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-    button { padding: 10px 14px; border: 0; border-radius: 8px; cursor: pointer; background: #111; color: #fff; font-weight: 700; }
+    button { padding: 10px 14px; border: 0; border-radius: 8px; cursor: pointer; background: #111; color: #fff; font-weight: 700; } 
     button:disabled { opacity: .6; cursor: not-allowed; }
     .error { margin-top: 12px; color: #c0392b; }
     .card { margin-top: 18px; padding: 16px; border: 1px solid #ddd; border-radius: 12px; display: none; }
-    .kv { display: grid; grid-template-columns: 220px minmax(140px, 260px); gap: 8px 12px; align-items: center; }
+    .kv { display: grid; grid-template-columns: 220px 1fr; gap: 8px; margin-top: 10px; }
     .k { color: #555; }
-    .v { font-weight: 700; }
-    .num{ text-align:right; white-space:nowrap; }
-
-    @media (max-width: 720px){
-  .kv{ grid-template-columns: 1fr; }
-  .k{ margin-top: 6px; }
-  .v, .num{ text-align:left;  }
+    .v { font-weight: 700; text-align:right; }
+    .num{ text-align:right; }
   </style>
 </head>
 <body>
