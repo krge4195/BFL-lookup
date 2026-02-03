@@ -1,1 +1,159 @@
 
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>개인 실적 조회</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+    .wrap { max-width: 760px; }
+    .row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+    input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    button { padding: 10px 14px; border: 0; border-radius: 8px; cursor: pointer; background: #111; color: #fff; font-weight: 700; } 
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .error { margin-top: 12px; color: #c0392b; }
+    .card { margin-top: 18px; padding: 16px; border: 1px solid #ddd; border-radius: 12px; display: none; }
+    .kv { display: grid; grid-template-columns: 220px 1fr; gap: 8px; margin-top: 10px; }
+    .k { color: #555; }
+    .v { font-weight: 700; text-align:right; }
+    .num{ text-align:right; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>개인 실적 조회</h2>
+
+    <div class="row">
+      <div>사번</div>
+      <input id="empNo" placeholder="사번을 입력하세요" autocomplete="off" />
+    </div>
+
+    <div class="row">
+      <div>인증번호</div>
+      <input id="password" placeholder="인증번호를 입력하세요" autocomplete="off" />
+    </div>
+
+    <button id="submitBtn" type="button">조회</button>
+    <div class="error" id="error"></div>
+
+    <div class="card" id="resultCard">
+      <div class="kv">
+        <div class="k">성명</div><div class="v" id="name"></div>
+        <div class="k">지부</div><div class="v" id="branch"></div>
+        <div class="k">라운지</div><div class="v" id="lounge"></div>
+      </div>
+
+      <div class="kv">
+        <div class="k">2024년 실적</div><div class="v num" id="y2024sales"></div>
+        <div class="k">2025년 실적</div><div class="v num" id="y2025sales"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // 아.. 하기 싫어.. 1) Apps Script 웹앱 URL
+  const API_URL = "https://script.google.com/macros/s/AKfycbweAefpkiTQyTvzR6c87Lyjy_kAOpK48pqJ1MSKfbZsPK5TWbByksOGnG6AOqUrihXx/exec";
+
+  // 2) 같은 입력값 재조회 방지(10분 캐시)
+  const FRONT_CACHE_TTL_MS = 10 * 60 * 1000;
+
+  const $ = (id) => document.getElementById(id);
+
+  // 숫자에 콤마 들어있어도 텍스트로 인식 및 표시
+  const fmt = (n) => {
+  if (n === null || n === undefined || n === "") return "-";
+  const s = String(n).replaceAll(",", "").trim();
+  const num = Number(s);
+  if (!Number.isFinite(num)) return String(n);
+
+  // 소숫점 제거 (반올림)
+  return Math.round(num).toLocaleString("ko-KR");
+};
+
+  function cacheKey(empNo, password) {
+    return `LoungeLookup:${empNo}:${password}`;
+  }
+
+  function readCache(empNo, password) {
+    const raw = localStorage.getItem(cacheKey(empNo, password));
+    if (!raw) return null;
+    try {
+      const obj = JSON.parse(raw);
+      if (Date.now() - obj.savedAt > FRONT_CACHE_TTL_MS) return null;
+      return obj.payload;
+    } catch { return null; }
+  }
+
+  function writeCache(empNo, password, payload) {
+    localStorage.setItem(cacheKey(empNo, password), JSON.stringify({ savedAt: Date.now(), payload }));
+  }
+
+  function render(json) {
+    $("error").textContent = "";
+    $("resultCard").style.display = "none";
+
+    if (!json || !json.ok) {
+      $("error").textContent = (json && json.message) ? json.message : "조회 실패";
+      return;
+    }
+
+    const d = json.data || {};
+    $("name").textContent = d.name ?? "-";
+    $("branch").textContent = d.branch ?? "-";
+    $("lounge").textContent = d.lounge ?? "-";
+
+    $("y2024sales").textContent = fmt(d.y2024_sales);
+    $("y2024bonus").textContent = fmt(d.y2024_bonus);
+    $("y2025sales").textContent = fmt(d.y2025_sales);
+    $("y2025bonus").textContent = fmt(d.y2025_bonus);
+
+    $("resultCard").style.display = "block";
+  }
+
+  async function onSubmit() {
+    $("error").textContent = "";
+    $("resultCard").style.display = "none";
+
+    const empNo = $("empNo").value.trim();
+    const password = $("password").value.trim();
+
+    if (!empNo || !password) {
+      $("error").textContent = "사번과 인증번호를 모두 입력하세요.";
+      return;
+    }
+
+    const btn = $("submitBtn");
+    btn.disabled = true;
+
+    try {
+      // 1) 프론트 캐시 확인
+      const cached = readCache(empNo, password);
+      if (cached) {
+        render(cached);
+        return;
+      }
+
+      // 2) 서버 호출: 요청키 empNo, password
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script 호환
+        body: JSON.stringify({ empNo, password })
+      });
+
+      const json = await res.json();
+      writeCache(empNo, password, json);
+      render(json);
+
+   } catch (e) {
+  console.error(e);
+  $("error").textContent = "오류: " + (e?.message || e);
+} finally {
+      setTimeout(() => { btn.disabled = false; }, 1500);
+    }
+  }
+
+  $("submitBtn").addEventListener("click", onSubmit);
+</script>
+</body>
+</html>
